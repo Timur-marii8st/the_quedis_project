@@ -4,3 +4,5 @@ Make sure that files with inf. about students name and subjects name are located
 Run a GUI_for_quedis and choose what you need. Interface was writed in russian.
 
 For history: That's my first programm)
+
+Also. I make a tg bot, for more comfortable using. It's the same thing, but in tg
