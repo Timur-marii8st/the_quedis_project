@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 from ..models import db, Group, Student, Subject, Score, AssignmentLog
 from ..services.distributor import (
     distribute_topics, replace_speaker,
-    ensure_scores_for_subject, ensure_scores_for_student,
+    ensure_scores_for_subject,
 )
 from ..services.excel import import_students, export_scores
 

@@ -3,7 +3,6 @@ from typing import BinaryIO
 import pandas as pd
 import openpyxl
 from openpyxl.styles import Font, PatternFill
-from sqlalchemy import select
 
 from ..models import db, Group, Student, Subject, Score
 from .distributor import ensure_scores_for_student
