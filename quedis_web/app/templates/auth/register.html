@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Регистрация — QUEDIS{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h4 class="card-title mb-4 text-center">Регистрация</h4>
+        <form method="post">
+          <div class="mb-3">
+            <label for="username" class="form-label">Имя пользователя</label>
+            <input type="text" id="username" name="username" class="form-control"
+                   autofocus required minlength="2" maxlength="80">
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Пароль</label>
+            <input type="password" id="password" name="password" class="form-control"
+                   required minlength="4">
+          </div>
+          <div class="mb-3">
+            <label for="password2" class="form-label">Повторите пароль</label>
+            <input type="password" id="password2" name="password2" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Зарегистрироваться</button>
+        </form>
+        <hr>
+        <p class="text-center mb-0">
+          Уже есть аккаунт?
+          <a href="{{ url_for('auth.login') }}">Войти</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }} — QUEDIS{% endblock %}
+{% block content %}
+
+{# ── Заголовок ── #}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <div>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-1">
+        <li class="breadcrumb-item"><a href="{{ url_for('groups.list_groups') }}">Группы</a></li>
+        <li class="breadcrumb-item active">{{ group.name }}</li>
+      </ol>
+    </nav>
+    <h2 class="mb-0">{{ group.name }}</h2>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{{ url_for('groups.export_excel', group_id=group.id) }}"
+       class="btn btn-outline-success btn-sm">Экспорт .xlsx</a>
+    <a href="{{ url_for('groups.history', group_id=group.id) }}"
+       class="btn btn-outline-secondary btn-sm">История</a>
+    <form method="post"
+          action="{{ url_for('groups.delete_group', group_id=group.id) }}"
+          onsubmit="return confirm('Удалить группу «{{ group.name }}»?')">
+      <button type="submit" class="btn btn-outline-danger btn-sm">Удалить группу</button>
+    </form>
+  </div>
+</div>
+
+<div class="row g-4">
+
+  {# ── Левая колонка: таблица + импорт ── #}
+  <div class="col-lg-8">
+
+    {# Таблица баллов #}
+    <div class="card shadow-sm mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Таблица баллов</span>
+        <span class="badge bg-secondary">{{ students | length }} студентов</span>
+      </div>
+      <div class="card-body p-0">
+        {% if students and subjects %}
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover table-sm mb-0 scores-table">
+              <thead class="table-dark">
+                <tr>
+                  <th>Студент</th>
+                  {% for subject in subjects %}
+                  <th class="text-center">{{ subject.display_name }}</th>
+                  {% endfor %}
+                  <th class="text-center text-warning-emphasis bg-dark">Σ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for student in students %}
+                  {% set total = namespace(val=0) %}
+                  <tr>
+                    <td>{{ student.name }}</td>
+                    {% for subject in subjects %}
+                      {% set val = score_map.get((student.id, subject.id), 0) %}
+                      {% set total.val = total.val + val %}
+                      <td class="text-center">{{ val }}</td>
+                    {% endfor %}
+                    <td class="text-center fw-bold">{{ total.val }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% elif not subjects %}
+          <p class="text-muted p-3 mb-0">Добавьте хотя бы один предмет, чтобы начать работу.</p>
+        {% elif not students %}
+          <p class="text-muted p-3 mb-0">Импортируйте список студентов из Excel.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Импорт студентов #}
+    <div class="card shadow-sm">
+      <div class="card-header fw-semibold">Импорт студентов из Excel</div>
+      <div class="card-body">
+        <form method="post"
+              action="{{ url_for('groups.import_excel', group_id=group.id) }}"
+              enctype="multipart/form-data">
+          <div class="mb-2">
+            <input type="file" name="excel_file" class="form-control form-control-sm"
+                   accept=".xlsx" required>
+            <div class="form-text">
+              Файл .xlsx, первая колонка — имена студентов (берутся первые два слова).
+            </div>
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="replace" value="1" id="replaceCheck">
+            <label class="form-check-label" for="replaceCheck">
+              Заменить существующий список
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Загрузить</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  {# ── Правая колонка: управление ── #}
+  <div class="col-lg-4">
+
+    {# Предметы #}
+    <div class="card shadow-sm mb-4">
+      <div class="card-header fw-semibold">Предметы</div>
+      <div class="card-body">
+        {% if subjects %}
+          <ul class="list-group list-group-flush mb-3">
+            {% for subject in subjects %}
+            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+              <span>{{ subject.display_name }}</span>
+              <form method="post"
+                    action="{{ url_for('groups.delete_subject', group_id=group.id, subject_id=subject.id) }}"
+                    onsubmit="return confirm('Удалить предмет «{{ subject.display_name }}»?')">
+                <button type="submit" class="btn btn-outline-danger btn-sm py-0">×</button>
+              </form>
+            </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted small">Предметов ещё нет.</p>
+        {% endif %}
+
+        <form method="post"
+              action="{{ url_for('groups.add_subject', group_id=group.id) }}">
+          <div class="input-group input-group-sm">
+            <input type="text" name="subject_name" class="form-control"
+                   placeholder="Название предмета" required>
+            <button type="submit" class="btn btn-outline-primary">+ Добавить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {# Распределить темы #}
+    <div class="card shadow-sm mb-4">
+      <div class="card-header fw-semibold">Распределить темы</div>
+      <div class="card-body">
+        {% if subjects and students %}
+        <form method="post" action="{{ url_for('groups.distribute', group_id=group.id) }}">
+          <div class="mb-2">
+            <label class="form-label form-label-sm">Предмет</label>
+            <select name="subject_id" class="form-select form-select-sm" required>
+              <option value="">— выберите —</option>
+              {% for s in subjects %}
+              <option value="{{ s.id }}">{{ s.display_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label form-label-sm">Количество тем</label>
+            <input type="number" name="count" class="form-control form-control-sm"
+                   min="1" max="{{ students | length }}" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm w-100">Назначить</button>
+        </form>
+        {% else %}
+          <p class="text-muted small mb-0">
+            Добавьте студентов и предметы для начала работы.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Заменить выступающего #}
+    <div class="card shadow-sm">
+      <div class="card-header fw-semibold">Заменить выступающего</div>
+      <div class="card-body">
+        {% if subjects and students %}
+        <form method="post" action="{{ url_for('groups.replace', group_id=group.id) }}">
+          <div class="mb-2">
+            <label class="form-label form-label-sm">Предмет</label>
+            <select name="subject_id" class="form-select form-select-sm" required>
+              <option value="">— выберите —</option>
+              {% for s in subjects %}
+              <option value="{{ s.id }}">{{ s.display_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label form-label-sm">Кто пропускает?</label>
+            <select name="outgoing_student_id" class="form-select form-select-sm" required>
+              <option value="">— выберите студента —</option>
+              {% for st in students %}
+              <option value="{{ st.id }}">{{ st.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-warning btn-sm w-100">Заменить</button>
+        </form>
+        {% else %}
+          <p class="text-muted small mb-0">
+            Добавьте студентов и предметы для начала работы.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

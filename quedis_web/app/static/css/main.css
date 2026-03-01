@@ -1,0 +1,24 @@
+/* QUEDIS — minimal custom styles */
+
+.scores-table th,
+.scores-table td {
+  white-space: nowrap;
+}
+
+.scores-table td:first-child {
+  font-weight: 500;
+  min-width: 140px;
+}
+
+.card {
+  border-radius: 0.5rem;
+}
+
+.navbar-brand {
+  letter-spacing: 0.05em;
+  font-size: 1.3rem;
+}
+
+body {
+  min-height: 100vh;
+}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Новая группа — QUEDIS{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <h2 class="mb-4">Создать группу</h2>
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <form method="post">
+          <div class="mb-3">
+            <label for="name" class="form-label">Название группы</label>
+            <input type="text" id="name" name="name" class="form-control"
+                   placeholder="Например: Группа 301" autofocus required>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Создать</button>
+            <a href="{{ url_for('groups.list_groups') }}" class="btn btn-outline-secondary">Отмена</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

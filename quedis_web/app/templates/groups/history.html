@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}История — {{ group.name }} — QUEDIS{% endblock %}
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-2">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('groups.list_groups') }}">Группы</a></li>
+    <li class="breadcrumb-item">
+      <a href="{{ url_for('groups.group_detail', group_id=group.id) }}">{{ group.name }}</a>
+    </li>
+    <li class="breadcrumb-item active">История</li>
+  </ol>
+</nav>
+
+<h2 class="mb-4">История распределений — {{ group.name }}</h2>
+
+{% if logs %}
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>Дата и время</th>
+            <th>Студент</th>
+            <th>Предмет</th>
+            <th>Действие</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td class="text-muted small">
+              {{ log.created_at.strftime('%d.%m.%Y %H:%M') }}
+            </td>
+            <td>{{ log.student.name }}</td>
+            <td>{{ log.subject.display_name }}</td>
+            <td>
+              {% if log.action == 'ASSIGN' %}
+                <span class="badge bg-primary">Назначен</span>
+              {% elif log.action == 'REPLACE_OUT' %}
+                <span class="badge bg-secondary">Заменён (ушёл)</span>
+              {% elif log.action == 'REPLACE_IN' %}
+                <span class="badge bg-success">Заменён (пришёл)</span>
+              {% else %}
+                <span class="badge bg-light text-dark">{{ log.action }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<p class="text-muted small mt-2">Показаны последние 200 записей.</p>
+{% else %}
+  <p class="text-muted">История пуста. Начните распределять темы.</p>
+{% endif %}
+
+<a href="{{ url_for('groups.group_detail', group_id=group.id) }}"
+   class="btn btn-outline-secondary mt-3">← Назад</a>
+{% endblock %}
